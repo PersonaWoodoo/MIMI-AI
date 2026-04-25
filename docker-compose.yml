@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  mimi-bot:
+    build: .
+    container_name: mimi-ai-bot
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mimi-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: mimi-redis
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - ./redis-data:/data
+    networks:
+      - mimi-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: mimi-db
+    restart: always
+    environment:
+      POSTGRES_DB: mimi_ai
+      POSTGRES_USER: mimi
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - mimi-network
+
+networks:
+  mimi-network:
+    driver: bridge
